@@ -29,6 +29,11 @@ Prefixes will be used for clarity but not strictly enforced.
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+### VS Code Recommended Settings
+
+For best development experience, use the `.vscode/settings.json` included in this repo.  
+It enforces consistent formatting and linting with Prettier and ESLint.
+
 ## Getting Started
 
 First, install dependencies:
