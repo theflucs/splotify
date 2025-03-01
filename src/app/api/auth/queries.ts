@@ -1,8 +1,9 @@
 import { SPOTIFY_API } from "@/constants";
 import { SpotifyAuthTokenResponse } from "./types";
+import { setMinimumDelay } from "./utils";
 
-// client credential flow for non-logged-in users
 export async function getSpotifyAuthToken(): Promise<SpotifyAuthTokenResponse | null> {
+  const startTime = Date.now();
   const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID!;
   const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
 
@@ -24,7 +25,11 @@ export async function getSpotifyAuthToken(): Promise<SpotifyAuthTokenResponse | 
       return null;
     }
 
-    return response.json();
+    const data = await response.json();
+
+    await setMinimumDelay(startTime, 1000);
+
+    return data;
   } catch (error) {
     console.error("Network or Fetch Error:", error);
     return null;
