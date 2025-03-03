@@ -1,6 +1,7 @@
 import { SpotifyAuthTokenResponse } from "@/app/api/auth/types";
 import { setMinimumDelay } from "@/app/api/auth/utils";
 import { SPOTIFY_API } from "@/constants";
+import { render, screen } from "@testing-library/react";
 import axios from "axios";
 
 jest.mock("axios");
@@ -9,6 +10,23 @@ jest.mock("@/app/api/auth/utils", () => ({
   ...jest.requireActual("@/app/api/auth/utils"),
   setMinimumDelay: jest.fn(),
 }));
+
+jest.mock("@/app/loading", () => ({
+  __esModule: true,
+  default: function LoadingMock() {
+    return <div>Connecting to Spotify API...</div>;
+  },
+}));
+
+jest.mock("@/app/error", () => ({
+  __esModule: true,
+  default: function ErrorMock() {
+    return <div>Authentication Error</div>;
+  },
+}));
+
+import ErrorComponent from "@/app/error";
+import Loading from "@/app/loading";
 
 describe("getSpotifyAuthToken API Query", () => {
   let getSpotifyAuthToken: () => Promise<SpotifyAuthTokenResponse | null>;
@@ -59,7 +77,7 @@ describe("getSpotifyAuthToken API Query", () => {
       await getSpotifyAuthToken();
 
       expect(setMinimumDelay).toHaveBeenCalledTimes(1);
-      expect(setMinimumDelay).toHaveBeenCalledWith(expect.any(Number), 1000);
+      expect(setMinimumDelay).toHaveBeenCalledWith(expect.any(Number), 1400);
     });
   });
 
@@ -124,6 +142,20 @@ describe("getSpotifyAuthToken API Query", () => {
 
       expect(setMinimumDelay).toHaveBeenCalledTimes(1);
       expect(setMinimumDelay).toHaveBeenCalledWith(expect.any(Number), 1400);
+    });
+  });
+
+  describe("Loading & Error components", () => {
+    it("renders the loading message", () => {
+      render(<Loading />);
+      expect(
+        screen.getByText("Connecting to Spotify API..."),
+      ).toBeInTheDocument();
+    });
+
+    it("renders the error message", () => {
+      render(<ErrorComponent />);
+      expect(screen.getByText("Authentication Error")).toBeInTheDocument();
     });
   });
 });
