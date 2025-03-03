@@ -82,13 +82,6 @@ describe("getSpotifyAuthToken API Query", () => {
       expect(axios.post).toHaveBeenCalledTimes(1);
     });
 
-    it("does NOT call `setMinimumDelay` if the API request fails", async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
-
-      await getSpotifyAuthToken();
-      expect(setMinimumDelay).not.toHaveBeenCalled();
-    });
-
     it("handles an unexpected empty object `{}` response by returning null", async () => {
       (axios.post as jest.Mock).mockResolvedValueOnce({ data: {} });
 
@@ -109,6 +102,28 @@ describe("getSpotifyAuthToken API Query", () => {
       );
 
       expect(axios.post).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("setMinimumDelay on API response", () => {
+    it("calls `setMinimumDelay` when the API request is successful", async () => {
+      (axios.post as jest.Mock).mockResolvedValueOnce({
+        data: mockTokenResponse,
+      });
+
+      await getSpotifyAuthToken();
+
+      expect(setMinimumDelay).toHaveBeenCalledTimes(1);
+      expect(setMinimumDelay).toHaveBeenCalledWith(expect.any(Number), 1400);
+    });
+
+    it("calls `setMinimumDelay` even when the API request fails", async () => {
+      (axios.post as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
+
+      await getSpotifyAuthToken();
+
+      expect(setMinimumDelay).toHaveBeenCalledTimes(1);
+      expect(setMinimumDelay).toHaveBeenCalledWith(expect.any(Number), 1400);
     });
   });
 });

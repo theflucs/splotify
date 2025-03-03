@@ -25,10 +25,11 @@ export async function getSpotifyAuthToken(): Promise<SpotifyAuthTokenResponse | 
       },
     );
 
-    await setMinimumDelay(startTime, 1000);
+    await setMinimumDelay(startTime, 1400);
     return response.data;
   } catch (error) {
     console.log("Spotify API Error:", error);
+    await setMinimumDelay(startTime, 1400);
     return null;
   }
 }
