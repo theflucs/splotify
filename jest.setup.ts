@@ -1,11 +1,14 @@
 import "@testing-library/jest-dom";
 import { setupServer } from "msw/node";
 
+// suppress console logs during Jest tests
+jest.spyOn(console, "log").mockImplementation(() => {});
+jest.spyOn(console, "error").mockImplementation(() => {});
+
 export const server = setupServer();
 
 beforeAll(() => {
   server.listen();
-  jest.spyOn(console, "error").mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -15,7 +18,7 @@ afterEach(() => {
 
 afterAll(() => {
   server.close();
-  // restore console.error to its original state after all tests are complete
+  // restore console.error after all tests are complete
   (console.error as jest.Mock).mockRestore();
 });
 
