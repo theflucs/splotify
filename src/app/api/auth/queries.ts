@@ -1,37 +1,34 @@
 import { SPOTIFY_API } from "@/constants";
+import axios from "axios";
 import { SpotifyAuthTokenResponse } from "./types";
-import { setMinimumDelay } from "./utils";
+import { getSpotifyAuthHeader, setMinimumDelay } from "./utils";
 
+// client credentials flow
 export async function getSpotifyAuthToken(): Promise<SpotifyAuthTokenResponse | null> {
   const startTime = Date.now();
-  const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID!;
-  const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
+  const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+  const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+
+  if (!CLIENT_ID || !CLIENT_SECRET) {
+    throw new Error("Missing Spotify API credentials. Check your .env file.");
+  }
 
   try {
-    const response = await fetch(SPOTIFY_API.TOKEN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64")}`,
+    const response = await axios.post<SpotifyAuthTokenResponse>(
+      SPOTIFY_API.TOKEN_URL,
+      new URLSearchParams({ grant_type: "client_credentials" }).toString(),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: getSpotifyAuthHeader(CLIENT_ID, CLIENT_SECRET),
+        },
       },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-      }).toString(),
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      console.error("Spotify API Error:", response.status, response.statusText);
-      return null;
-    }
-
-    const data = await response.json();
+    );
 
     await setMinimumDelay(startTime, 1000);
-
-    return data;
+    return response.data;
   } catch (error) {
-    console.error("Network or Fetch Error:", error);
+    console.log("Spotify API Error:", error);
     return null;
   }
 }
