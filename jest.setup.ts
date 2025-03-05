@@ -18,8 +18,7 @@ afterEach(() => {
 
 afterAll(() => {
   server.close();
-  // restore console.error after all tests are complete
-  (console.error as jest.Mock).mockRestore();
+  jest.restoreAllMocks();
 });
 
 jest.mock("@tanstack/react-query", () => ({
