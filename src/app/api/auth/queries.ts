@@ -1,35 +1,17 @@
-import { SPOTIFY_API } from "@/constants";
-import axios from "axios";
-import { SpotifyAuthTokenResponse } from "./types";
-import { getSpotifyAuthHeader, setMinimumDelay } from "./utils";
+import { setMinimumDelay } from "@/app/api/auth/utils";
+import { fetchNewToken, getCachedToken } from "@/app/api/tokenManager";
 
-// client credentials flow
-export async function getSpotifyAuthToken(): Promise<SpotifyAuthTokenResponse | null> {
+export const getSpotifyAuthToken = async () => {
+  const cachedToken = getCachedToken();
+
+  if (cachedToken) {
+    return cachedToken;
+  }
+
   const startTime = Date.now();
-  const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-  const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+  const newToken = await fetchNewToken();
 
-  if (!CLIENT_ID || !CLIENT_SECRET) {
-    throw new Error("Missing Spotify API credentials. Check your .env file.");
-  }
+  await setMinimumDelay(startTime, 1400);
 
-  try {
-    const response = await axios.post<SpotifyAuthTokenResponse>(
-      SPOTIFY_API.TOKEN_URL,
-      new URLSearchParams({ grant_type: "client_credentials" }).toString(),
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: getSpotifyAuthHeader(CLIENT_ID, CLIENT_SECRET),
-        },
-      },
-    );
-
-    await setMinimumDelay(startTime, 1400);
-    return response.data;
-  } catch (error) {
-    console.log("Spotify API Error:", error);
-    await setMinimumDelay(startTime, 1400);
-    return null;
-  }
-}
+  return newToken;
+};
